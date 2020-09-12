@@ -19,6 +19,12 @@
 #include "model_data.h"
 #include "model_operations.h"
 
+
+// Quanhh đã chữa nè 
+
+#include "include/app_camera.h" 
+
+
 int totalExpectedDataAmount = INPUT_IMAGE_WIDTH * INPUT_IMAGE_HEIGHT * INPUT_IMAGE_CHANNELS;
 
 tflite::ErrorReporter *error_reporter = nullptr;
@@ -86,12 +92,31 @@ void doInference()
 
 extern "C" void app_main(void)
 {
+    app_camera_init();
     initUart(UART_NUMBER);
     setup();
-    for (;;)
+    while (true)
     {
-        readUartBytes(input->data.f, totalExpectedDataAmount);
-        doInference();
-        sendBackPredictions(output);
+        uint8_t a[10]={0};
+        uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
+        uart_flush(UART_NUMBER);
+        //doInference();
+        //sendBackPredictions(output);
+        
+        if( a[0]==49 )
+        {
+        
+            sendData("ahihi \n");
+            
+            char str[250] ="";
+            char motso[10];
+            for (int i=0; i<10; i++ )
+            {
+                strcat( str, itoa( (int)a[i], motso, 10 ));
+            }
+            strcat( str, "\n");
+            sendData(str);
+        }
+
     }
 }
