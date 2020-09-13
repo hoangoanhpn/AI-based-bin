@@ -22,7 +22,7 @@
 
 // Quanhh đã chữa nè 
 
-#include "include/app_camera.h" 
+#include "app_camera.h" 
 
 
 int totalExpectedDataAmount = INPUT_IMAGE_WIDTH * INPUT_IMAGE_HEIGHT * INPUT_IMAGE_CHANNELS;
@@ -89,6 +89,8 @@ void doInference()
         return;
     }
 }
+
+
 
 extern "C" void app_main(void)
 {

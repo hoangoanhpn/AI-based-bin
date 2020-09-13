@@ -16,4 +16,4 @@ cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-project(Fashion_MNIST_external_MCU)
+project(Fashion_MNIST_external_MCU) 
