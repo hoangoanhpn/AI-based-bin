@@ -141,14 +141,14 @@ while True:
     image = image.decode("utf-8")
 
     ## Nhận kq dự đoán
-    response_kq = read_result_from_mcu(serial_port)
-    response_kq = response_kq.decode("utf-8")
+    # response_kq = read_result_from_mcu(serial_port)
+    # response_kq = response_kq.decode("utf-8")
 
     ## save hình
     print(image)
 
     ## show kq dự đoán
-    print ( response_kq)
+    # print ( response_kq)
 
 
 

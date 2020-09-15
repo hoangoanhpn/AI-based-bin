@@ -28,7 +28,9 @@ void initUart(uart_port_t uart_num);
 
 void readUartBytes(float *data, int imageSize);
 
-int sendData(const char *data);
+int sendData(const char *data, int len = 0);
+
+//int sendImage(const char *data);
 
 void normalizeImageData(float *data, int imageSize);
 

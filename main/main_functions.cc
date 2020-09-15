@@ -55,12 +55,20 @@ void readUartBytes(float *data, int imageSize)
     return;
 }
 
-int sendData(const char *data)
+int sendData(const char *data, int len)
 {
-    const int len = strlen(data);
+    if (len == 0) len = strlen(data);
     const int txBytes = uart_write_bytes(UART_NUMBER, data, len);
     return txBytes;
 }
+
+//////////////// Q ne //////////////////////
+//  int sendImage(const char *data)
+// {
+   
+//     const int txBytes = uart_write_bytes(UART_NUMBER, data, len);
+//     return txBytes;
+// }
 
 void normalizeImageData(float *data, int imageSize)
 {

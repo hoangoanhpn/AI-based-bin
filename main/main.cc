@@ -90,7 +90,59 @@ void doInference()
     }
 }
 
+#include "esp_timer.h"
 
+
+static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len){
+    // jpg_chunking_t *j = (jpg_chunking_t *)arg;
+    // if(!index){
+    //     j->len = 0;
+    // }
+    // if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK){
+    //     return 0;
+    // }
+    // j->len += len;
+    return sendData((const char*)data, len);
+}
+
+void jpg_httpd_handler(){
+    camera_fb_t * fb = NULL;
+    // esp_err_t res = ESP_OK;
+    size_t fb_len = 0;
+    int64_t fr_start = esp_timer_get_time();
+    
+    // Code chup hinh ne :)
+    fb = esp_camera_fb_get();
+    if (!fb) {
+        sendData("Camera capture failed");
+       // ESP_LOGE(TAG, "Camera capture failed");
+        
+        return ;
+    }
+    else
+    {
+        sendData("Camera cua Q da chup ne :D ");
+         return ;
+    }
+    
+    
+
+    // if(res == ESP_OK){
+        if(fb->format == PIXFORMAT_JPEG){
+            fb_len = fb->len;
+            sendData((const char*)fb->buf, fb->len);
+            // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
+        } else {
+
+            frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
+
+        }
+    // }
+    esp_camera_fb_return(fb);
+    int64_t fr_end = esp_timer_get_time();
+    // ESP_LOGI(TAG, "JPG: %uKB %ums", (uint32_t)(fb_len/1024), (uint32_t)((fr_end - fr_start)/1000));
+    // return res;
+}
 
 extern "C" void app_main(void)
 {
@@ -107,8 +159,8 @@ extern "C" void app_main(void)
         
         if( a[0]==49 )
         {
-        
-            sendData("ahihi \n");
+            jpg_httpd_handler();
+            // sendData("ahihi \n");
             
             char str[250] ="";
             char motso[10];
