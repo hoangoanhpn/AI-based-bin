@@ -102,7 +102,23 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
     //     return 0;
     // }
     // j->len += len;
-    return sendData((const char*)data, len);
+    //return sendData((const char*)data, len);
+    //char str[4*len] ="";
+    char tmp[40];
+    const char* ahihi = (const char*) data;
+    //itoa((int)len, tmp, 10);
+    
+    //sendData(tmp);
+    sendData("tren tmp ne");sendData("\n");
+    for (int i=0; i< len; i++ )
+    {
+        itoa( (int)ahihi[i], tmp,10);
+        strcat( tmp, " ");
+        sendData(tmp);
+    }
+    sendData("dang test ne \n");
+    //strcat( str, "\n");
+    return sendData("");
 }
 
 void jpg_httpd_handler(){
@@ -122,7 +138,7 @@ void jpg_httpd_handler(){
     else
     {
         sendData("Camera cua Q da chup ne :D ");
-         return ;
+         //return ;
     }
     
     
@@ -130,10 +146,20 @@ void jpg_httpd_handler(){
     // if(res == ESP_OK){
         if(fb->format == PIXFORMAT_JPEG){
             fb_len = fb->len;
-            sendData((const char*)fb->buf, fb->len);
+            //sendData((const char*)fb->buf, fb->len);
+            char str[4*fb->len] ="";
+            char tmp[4];
+            for (int i=0; i< fb->len; i++ )
+            {
+                strcat( str, itoa( (int)fb->buf[i], tmp,4));
+                strcat( str, " ");
+            }
+            strcat( str, "\n");
+            sendData(str);
+
             // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         } else {
-
+            
             frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
 
         }
@@ -152,6 +178,7 @@ extern "C" void app_main(void)
     while (true)
     {
         uint8_t a[10]={0};
+        // doc chuoi python gui ("1")
         uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
         uart_flush(UART_NUMBER);
         //doInference();
@@ -160,7 +187,7 @@ extern "C" void app_main(void)
         if( a[0]==49 )
         {
             jpg_httpd_handler();
-            // sendData("ahihi \n");
+             sendData("ahihi \n");
             
             char str[250] ="";
             char motso[10];
