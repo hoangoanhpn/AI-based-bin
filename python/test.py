@@ -145,8 +145,28 @@ while True:
     # response_kq = response_kq.decode("utf-8")
 
     ## save hình
-    print(image)
+    # print(image)
 
+    # VÍ DỤ NÈ NHE MÁ 
+    # Cắt chuỗi to thành nhiều chuỗi nhỏ( mỗi chuỗi là 1 số)
+    # image =" 123 12 14 4"
+    # >>> image.split()
+    # ['123', '12', '14', '4']
+
+    # Đổi cái chuỗi hồi nãy nè, thành số  nguyên nè má :D
+    # [int(i) for i in image.split()]
+    # [123, 12, 14, 4]
+    
+    #bytearray: công cụ ghi cái nùi ở trên vào 1 file 
+    hien_hinh=bytearray([int(i) for i in image.split()])
+
+    # CHUẨN BỊ HIỆN HÌNH NÈ MÁ :)
+    import datetime
+
+    f = open(str(datetime.datetime.now())+".jpg", 'w+b')
+    f.write(hien_hinh)
+    f.close()
+    print('CHO HIEN HINH DOI NE')
     ## show kq dự đoán
     # print ( response_kq)
 

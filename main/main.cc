@@ -109,16 +109,16 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
     //itoa((int)len, tmp, 10);
     
     //sendData(tmp);
-    sendData("tren tmp ne");sendData("\n");
+    //sendData("tren tmp ne");sendData("\n");
     for (int i=0; i< len; i++ )
     {
         itoa( (int)ahihi[i], tmp,10);
         strcat( tmp, " ");
         sendData(tmp);
     }
-    sendData("dang test ne \n");
-    //strcat( str, "\n");
-    return sendData("");
+    //sendData("dang test ne \n");
+    //strcalen; str, "\n");
+    return len;
 }
 
 void jpg_httpd_handler(){
@@ -137,7 +137,7 @@ void jpg_httpd_handler(){
     }
     else
     {
-        sendData("Camera cua Q da chup ne :D ");
+       // sendData("Camera cua Q da chup ne :D ");
          //return ;
     }
     
@@ -147,21 +147,21 @@ void jpg_httpd_handler(){
         if(fb->format == PIXFORMAT_JPEG){
             fb_len = fb->len;
             //sendData((const char*)fb->buf, fb->len);
-            char str[4*fb->len] ="";
-            char tmp[4];
+            //char str[4*fb->len] ="";
+            char tmp[40];
             for (int i=0; i< fb->len; i++ )
             {
-                strcat( str, itoa( (int)fb->buf[i], tmp,4));
-                strcat( str, " ");
+                itoa( (int)fb->buf[i], tmp,10);
+                strcat( tmp, " ");
+                sendData(tmp);
             }
-            strcat( str, "\n");
-            sendData(str);
+            sendData("\n");
 
             // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         } else {
             
             frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
-
+            sendData("\n");
         }
     // }
     esp_camera_fb_return(fb);
