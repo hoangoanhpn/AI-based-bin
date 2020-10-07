@@ -35,7 +35,10 @@ TfLiteTensor *output = nullptr;
 
 // Create an area of memory to use for input, output, and intermediate arrays.
 // Finding the minimum value for your model may require some trial and error.
-constexpr int kTensorArenaSize = 50 * 1024;
+// max Arenasize 153388
+//constexpr int kTensorArenaSize =  149*1024;
+constexpr int kTensorArenaSize =  5*1024;
+
 uint8_t tensor_arena[kTensorArenaSize];
 
 // The name of this function is important for Arduino compatibility.
@@ -187,16 +190,16 @@ extern "C" void app_main(void)
         if( a[0]==49 )
         {
             jpg_httpd_handler();
-             sendData("ahihi \n");
+            //  sendData("ahihi \n");
             
-            char str[250] ="";
-            char motso[10];
-            for (int i=0; i<10; i++ )
-            {
-                strcat( str, itoa( (int)a[i], motso, 10 ));
-            }
-            strcat( str, "\n");
-            sendData(str);
+            // char str[250] ="";
+            // char motso[10];
+            // for (int i=0; i<10; i++ )
+            // {
+            //     strcat( str, itoa( (int)a[i], motso, 10 ));
+            // }
+            // strcat( str, "\n");
+            // sendData(str);
         }
 
     }
