@@ -90,5 +90,7 @@ void sendBackPredictions(TfLiteTensor *output)
         strcat(str, buf);
     }
     strcat(str, "\n");
+
+    sendData("###ketquapredictne###\n");
     sendData(str);
 }

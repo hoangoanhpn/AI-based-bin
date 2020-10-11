@@ -37,13 +37,16 @@ TfLiteTensor *output = nullptr;
 // Finding the minimum value for your model may require some trial and error.
 // max Arenasize 153388
 //constexpr int kTensorArenaSize =  149*1024;
-constexpr int kTensorArenaSize =  5*1024;
 
-uint8_t tensor_arena[kTensorArenaSize];
+constexpr int kTensorArenaSize =  322496;
+
+//uint8_t tensor_arena[kTensorArenaSize];
+uint8_t *tensor_arena;
 
 // The name of this function is important for Arduino compatibility.
 void setup()
 {
+    tensor_arena= new uint8_t[kTensorArenaSize];
     // Set up logging.
     static tflite::MicroErrorReporter micro_error_reporter;
     error_reporter = &micro_error_reporter;
@@ -178,7 +181,7 @@ extern "C" void app_main(void)
     app_camera_init();
     initUart(UART_NUMBER);
     setup();
-    while (true)
+    while (false)
     {
         uint8_t a[10]={0};
         // doc chuoi python gui ("1")
@@ -201,6 +204,20 @@ extern "C" void app_main(void)
             // strcat( str, "\n");
             // sendData(str);
         }
+        
 
+    }
+
+    for (;;)
+    {
+        char a[30]={0};
+        // doc chuoi python gui ("1")
+       
+        readUartBytes(input->data.f, totalExpectedDataAmount);
+        doInference();
+        sendBackPredictions(output);
+        uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
+        sendData(a);
+        sendData("\n");
     }
 }

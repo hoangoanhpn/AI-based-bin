@@ -19,21 +19,21 @@ tflite::OpResolver& getOptimizedMicroOpResolver() {
         tflite::BuiltinOperator_FULLY_CONNECTED,
         tflite::ops::micro::Register_FULLY_CONNECTED(), 1, 4);
     
-    // micro_op_resolver.AddBuiltin(
-    //     tflite::BuiltinOperator_MAX_POOL_2D,
-    //     tflite::ops::micro::Register_MAX_POOL_2D());
+    micro_op_resolver.AddBuiltin(
+        tflite::BuiltinOperator_MAX_POOL_2D,
+        tflite::ops::micro::Register_MAX_POOL_2D());
     
-    // micro_op_resolver.AddBuiltin(
-    //     tflite::BuiltinOperator_CONV_2D,
-    //     tflite::ops::micro::Register_CONV_2D(), 1, 3);
+    micro_op_resolver.AddBuiltin(
+        tflite::BuiltinOperator_CONV_2D,
+        tflite::ops::micro::Register_CONV_2D(), 1, 3);
     
-    // micro_op_resolver.AddBuiltin(
-    //     tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-    //     tflite::ops::micro::Register_DEPTHWISE_CONV_2D(), 1, 3);
+    micro_op_resolver.AddBuiltin(
+        tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
+        tflite::ops::micro::Register_DEPTHWISE_CONV_2D(), 1, 3);
     
-    // micro_op_resolver.AddBuiltin(
-    //     tflite::BuiltinOperator_RELU,
-    //     tflite::ops::micro::Register_RELU());
+    micro_op_resolver.AddBuiltin(
+        tflite::BuiltinOperator_RELU,
+        tflite::ops::micro::Register_RELU());
 
     return micro_op_resolver;
 }
