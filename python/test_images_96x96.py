@@ -23,6 +23,7 @@ INPUT_IMAGE_SIZE = 96
 tflite_model_file = 'model.tflite'
 
 # Path to images folder
+# path = 'test_trash/'
 path = 'test_trash/'
 file_format = ".jpg"
 
@@ -156,7 +157,7 @@ for f in files:
     # status = compare_results(result_tfl, result_mcu)
     # status_str = "Ok" if status else "Reults NOT eqal!"
     print("ket qua ne ", f, label[Quanhh],result_mcu)
-    i+=1
-    if i==100:break
+    # i+=1
+    # if i==100:break
 
 serial_port.close()

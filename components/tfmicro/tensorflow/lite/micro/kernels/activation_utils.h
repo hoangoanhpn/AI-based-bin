@@ -41,10 +41,9 @@ inline float ActivationValFloat(TfLiteFusedActivation act, float a) {
       return std::signbit(a);
     case kTfLiteActSigmoid:
       return 1.0f / (1.0f + std::exp(-a));
-    default:
-      return a;
-      // TODO throw std::invalid_argument( "TfLiteFusedActivation act" );
   }
+  return 0.0f;  // To indicate an unsupported activation (i.e. when a new fused
+                // activation is added to the enum and not handled here).
 }
 
 }  // namespace micro

@@ -20,6 +20,11 @@
 #include "model_operations.h"
 
 
+
+#include "ultrasonic.h"
+
+
+
 // Quanhh đã chữa nè 
 
 #include "app_camera.h" 
@@ -38,8 +43,8 @@ TfLiteTensor *output = nullptr;
 // max Arenasize 153388
 //constexpr int kTensorArenaSize =  149*1024;
 
-constexpr int kTensorArenaSize =  322496;
-
+//constexpr int kTensorArenaSize =  322496;
+constexpr int kTensorArenaSize =  340000;
 //uint8_t tensor_arena[kTensorArenaSize];
 uint8_t *tensor_arena;
 
@@ -162,12 +167,18 @@ void jpg_httpd_handler(){
                 sendData(tmp);
             }
             sendData("\n");
-
+            
+            doInference();
+            sendBackPredictions(output);
             // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         } else {
             
             frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
             sendData("\n");
+            
+            doInference();
+            sendBackPredictions(output);
+            
         }
     // }
     esp_camera_fb_return(fb);
@@ -181,18 +192,20 @@ extern "C" void app_main(void)
     app_camera_init();
     initUart(UART_NUMBER);
     setup();
-    while (false)
+    while (true)
     {
         uint8_t a[10]={0};
         // doc chuoi python gui ("1")
         uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
         uart_flush(UART_NUMBER);
-        //doInference();
-        //sendBackPredictions(output);
+        // doInference();
+        // sendBackPredictions(output);
         
         if( a[0]==49 )
         {
             jpg_httpd_handler();
+            // doInference();
+            // sendBackPredictions(output);
             //  sendData("ahihi \n");
             
             // char str[250] ="";
@@ -208,16 +221,17 @@ extern "C" void app_main(void)
 
     }
 
-    for (;;)
-    {
-        char a[30]={0};
-        // doc chuoi python gui ("1")
+///// TEST ẢNH TĨNH : test_image_96x96
+    // for (;;)
+    // {
+    //     char a[30]={0};
+    //     // doc chuoi python gui ("1")
        
-        readUartBytes(input->data.f, totalExpectedDataAmount);
-        doInference();
-        sendBackPredictions(output);
-        uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
-        sendData(a);
-        sendData("\n");
-    }
+        // readUartBytes(input->data.f, totalExpectedDataAmount);
+    //     doInference();
+    //     sendBackPredictions(output);
+    //     uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
+    //     sendData(a);
+    //     sendData("\n");
+    // }
 }

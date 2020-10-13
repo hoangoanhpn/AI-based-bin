@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 # except:
 #   pass
 
-INPUT_IMAGE_SIZE = 14
+INPUT_IMAGE_SIZE = 96
 
 # Path to TensorFlow Lite model file
 tflite_model_file = 'model.tflite'
@@ -140,10 +140,7 @@ while True:
     image = read_result_from_mcu(serial_port)
     image = image.decode("utf-8")
 
-    ## Nhận kq dự đoán
-    # response_kq = read_result_from_mcu(serial_port)
-    # response_kq = response_kq.decode("utf-8")
-
+   
     ## save hình
     # print(image)
 
@@ -170,7 +167,15 @@ while True:
     ## show kq dự đoán
     # print ( response_kq)
 
-
+ ## Nhận kq dự đoán
+    response_kq = ""
+    while response_kq != "###ketquapredictne###\n":
+        response_kq = read_result_from_mcu(serial_port)
+        response_kq = response_kq.decode("utf-8")
+        print(response_kq)
+    response_kq = read_result_from_mcu(serial_port)
+    response_kq = response_kq.decode("utf-8")
+    print("ket qua ne ",response_kq)
 
 # for f in files:
 #     # Read image

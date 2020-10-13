@@ -5,6 +5,7 @@ set(COMPONENT_SRCS
     "app_camera.cc" 
     "model_data.cc"
     "model_operations.cc"
+    "ultrasonic.cc"
 )
 
 set(COMPONENT_ADD_INCLUDEDIRS ". include")
