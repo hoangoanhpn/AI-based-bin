@@ -44,7 +44,7 @@ TfLiteTensor *output = nullptr;
 //constexpr int kTensorArenaSize =  149*1024;
 
 //constexpr int kTensorArenaSize =  322496;
-constexpr int kTensorArenaSize =  340000;
+constexpr int kTensorArenaSize =  420548;
 //uint8_t tensor_arena[kTensorArenaSize];
 uint8_t *tensor_arena;
 
@@ -166,17 +166,27 @@ void jpg_httpd_handler(){
                 strcat( tmp, " ");
                 sendData(tmp);
             }
+            sendData("  nen ne\n");
             sendData("\n");
             
             doInference();
             sendBackPredictions(output);
             // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
         } else {
-            
-            frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
+            fb_len = fb->len;
+            //sendData((const char*)fb->buf, fb->len);
+            //char str[4*fb->len] ="";
+            char tmp[40];
+            for (int i=0; i< fb->len; i++ )
+            {
+                itoa( (int)fb->buf[i], tmp,10);
+                strcat( tmp, " ");
+                sendData(tmp);
+            }
+            // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
             sendData("\n");
             
-            doInference();
+            doInference();sendData("hinh chua nen ne\n");
             sendBackPredictions(output);
             
         }
@@ -201,11 +211,46 @@ extern "C" void app_main(void)
         // doInference();
         // sendBackPredictions(output);
         
-        if( a[0]==49 )
-        {
-            jpg_httpd_handler();
-            // doInference();
-            // sendBackPredictions(output);
+            if( a[0]==49 )
+            {
+                camera_fb_t * fb = NULL;
+                // esp_err_t res = ESP_OK;
+                size_t fb_len = 0;
+                int64_t fr_start = esp_timer_get_time();
+                
+                // Code chup hinh ne :)
+                fb = esp_camera_fb_get();
+                if (!fb) {
+                    sendData("Camera capture failed");
+                // ESP_LOGE(TAG, "Camera capture failed");
+                    
+                    return ;
+                }
+                else
+                {
+                // sendData("Camera cua Q da chup ne :D ");
+                    //return ;
+                }
+                // jpg_httpd_handler();
+                fb_len = fb->len;
+                //sendData((const char*)fb->buf, fb->len);
+                //char str[4*fb->len] ="";
+                char tmp[40];
+                for (int i=0; i< fb->len; i++ )
+                {
+                    itoa( (int)fb->buf[i], tmp,10);
+                    strcat( tmp, " ");
+                    sendData(tmp);
+                }
+                // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
+                sendData("\n");
+                for(int i = 0; i < fb->len; i++){
+                    input->data.f[i] = fb->buf[i]/255.0f;
+                }
+               
+                doInference();
+                sendBackPredictions(output);
+                esp_camera_fb_return(fb);
             //  sendData("ahihi \n");
             
             // char str[250] ="";

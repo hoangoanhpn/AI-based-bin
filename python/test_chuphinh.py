@@ -156,18 +156,23 @@ while True:
     
     #bytearray: công cụ ghi cái nùi ở trên vào 1 file 
     hien_hinh=bytearray([int(i) for i in image.split()])
-
+    print("kich thuoc mang byte hinh la ", len(hien_hinh))
     # CHUẨN BỊ HIỆN HÌNH NÈ MÁ :)
+    
     import datetime
+    # img = Image.fromarray(hien_hinh)
+    img = Image.frombytes(mode='RGB', size=(96,96), data=bytes(hien_hinh), decoder_name='raw')
+    img.save(str(datetime.datetime.now())+".bmp")
 
-    f = open(str(datetime.datetime.now())+".jpg", 'w+b')
-    f.write(hien_hinh)
-    f.close()
+    # f = open(str(datetime.datetime.now())+"", 'w+b')
+    # f.write(hien_hinh)
+    # f.close()
     print('CHO HIEN HINH DOI NE')
     ## show kq dự đoán
     # print ( response_kq)
 
  ## Nhận kq dự đoán
+    label= {0: 'cardboard', 1: 'glass', 2: 'metal', 3: 'paper', 4: 'plastic', 5: 'trash'}
     response_kq = ""
     while response_kq != "###ketquapredictne###\n":
         response_kq = read_result_from_mcu(serial_port)
@@ -175,7 +180,10 @@ while True:
         print(response_kq)
     response_kq = read_result_from_mcu(serial_port)
     response_kq = response_kq.decode("utf-8")
-    print("ket qua ne ",response_kq)
+    predictions = np.fromstring(response_kq, dtype=np.float32, sep=',')
+    Quanhh= np.argmax(predictions)
+    print("lable ne ",label[Quanhh])
+    print("ket qua ne",predictions)
 
 # for f in files:
 #     # Read image
