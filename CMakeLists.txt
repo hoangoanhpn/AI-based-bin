@@ -14,6 +14,11 @@ cmake_minimum_required(VERSION 3.5)
 #     
 #     include($ENV{IOT_SOLUTION_PATH}/CMakeLists.txt)
 
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+#include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+set(EXTRA_COMPONENT_DIRS /home/oanh/esp32CAM/ESP32_Fashion_MNIST/components/esp-idf-lib/components)
 project(Fashion_MNIST_external_MCU) 
+
+
+

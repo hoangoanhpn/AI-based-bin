@@ -21,7 +21,6 @@
 
 
 
-#include "ultrasonic.h"
 
 
 
@@ -197,86 +196,193 @@ void jpg_httpd_handler(){
     // return res;
 }
 
-extern "C" void app_main(void)
+#include <stdio.h>
+#include <stdbool.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <ultrasonic.h>
+#include <iostream>
+
+using namespace std;
+
+#define MAX_DISTANCE_CM 500 // 5m max
+#define TRIGGER_GPIO GPIO_NUM_12
+#define ECHO_GPIO GPIO_NUM_13
+
+
+
+void ultrasonic_test(void *pvParamters)
 {
-    app_camera_init();
-    initUart(UART_NUMBER);
-    setup();
+    ultrasonic_sensor_t sensor = {
+        .trigger_pin = TRIGGER_GPIO,
+        .echo_pin = ECHO_GPIO
+    };
+
+    ultrasonic_init(&sensor);
+
     while (true)
     {
-        uint8_t a[10]={0};
-        // doc chuoi python gui ("1")
-        uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
-        uart_flush(UART_NUMBER);
-        // doInference();
-        // sendBackPredictions(output);
-        
-            if( a[0]==49 )
+        uint32_t distance;
+        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance);
+        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+        cout<<(distance);
+        if (res != ESP_OK)
+        {
+            printf("Error: ");
+            switch (res)
             {
-                camera_fb_t * fb = NULL;
-                // esp_err_t res = ESP_OK;
-                size_t fb_len = 0;
-                int64_t fr_start = esp_timer_get_time();
-                
-                // Code chup hinh ne :)
-                fb = esp_camera_fb_get();
-                if (!fb) {
-                    sendData("Camera capture failed");
-                // ESP_LOGE(TAG, "Camera capture failed");
-                    
-                    return ;
-                }
-                else
-                {
-                // sendData("Camera cua Q da chup ne :D ");
-                    //return ;
-                }
-                // jpg_httpd_handler();
-                fb_len = fb->len;
-                //sendData((const char*)fb->buf, fb->len);
-                //char str[4*fb->len] ="";
-                char tmp[40];
-                for (int i=0; i< fb->len; i++ )
-                {
-                    itoa( (int)fb->buf[i], tmp,10);
-                    strcat( tmp, " ");
-                    sendData(tmp);
-                }
-                // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
-                sendData("\n");
-                for(int i = 0; i < fb->len; i++){
-                    input->data.f[i] = fb->buf[i]/255.0f;
-                }
-               
-                doInference();
-                sendBackPredictions(output);
-                esp_camera_fb_return(fb);
-            //  sendData("ahihi \n");
-            
-            // char str[250] ="";
-            // char motso[10];
-            // for (int i=0; i<10; i++ )
-            // {
-            //     strcat( str, itoa( (int)a[i], motso, 10 ));
-            // }
-            // strcat( str, "\n");
-            // sendData(str);
+                case ESP_ERR_ULTRASONIC_PING:
+                    cout<<("Cannot ping (device is in invalid state)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                    printf("Ping timeout (no device found)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                    printf("Echo timeout (i.e. distance too big)\n");
+                    break;
+                default:
+                    printf("%d\n", res);
+            }
         }
+        else
+            printf("Distance: %d cm\n", distance);
+
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+}
+/*
+MIT License
+
+Copyright (c) 2018 ShellAddicted <github.com/ShellAddicted>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "servoControl.h"
+
+
+// extern "C" void app_main(){
+// 	servoControl myServo;
+// 	myServo.attach(GPIO_NUM_12);
+// 	//Defaults: myServo.attach(pin, 400, 2600, LEDC_CHANNEL_0, LEDC_TIMER0);
+// 	// to use more servo set a valid ledc channel and timer
+	
+// 	myServo.write(0);
+// 	vTaskDelay(1000 / portTICK_RATE_MS);
+	
+// 	while (1){
+// 		for (int i = 0; i<180; i++){
+// 			myServo.write(i);
+// 			vTaskDelay(10 / portTICK_RATE_MS);
+// 		}
+// 		for (int i = 180; i>0; i--){
+// 			myServo.write(i);
+// 			vTaskDelay(10 / portTICK_RATE_MS);
+// 		}
+// 	}
+// }
+
+extern "C" void app_main(void)
+{
+     xTaskCreate(ultrasonic_test, "ultrasonic_test", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
+
+
+//     // app_camera_init();
+//     // initUart(UART_NUMBER);
+//     // setup();
+//     // while (true)
+//     // {
+//     //     uint8_t a[10]={0};
+//     //     // doc chuoi python gui ("1")
+//     //     uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
+//     //     uart_flush(UART_NUMBER);
+//     //     // doInference();
+//     //     // sendBackPredictions(output);
+        
+//     //         if( a[0]==49 )
+//     //         {
+//     //             camera_fb_t * fb = NULL;
+//     //             // esp_err_t res = ESP_OK;
+//     //             size_t fb_len = 0;
+//     //             int64_t fr_start = esp_timer_get_time();
+                
+//     //             // Code chup hinh ne :)
+//     //             fb = esp_camera_fb_get();
+//     //             if (!fb) {
+//     //                 sendData("Camera capture failed");
+//     //             // ESP_LOGE(TAG, "Camera capture failed");
+                    
+//     //                 return ;
+//     //             }
+//     //             else
+//     //             {
+//     //             // sendData("Camera cua Q da chup ne :D ");
+//     //                 //return ;
+//     //             }
+//     //             // jpg_httpd_handler();
+//     //             fb_len = fb->len;
+//     //             //sendData((const char*)fb->buf, fb->len);
+//     //             //char str[4*fb->len] ="";
+//     //             char tmp[40];
+//     //             for (int i=0; i< fb->len; i++ )
+//     //             {
+//     //                 itoa( (int)fb->buf[i], tmp,10);
+//     //                 strcat( tmp, " ");
+//     //                 sendData(tmp);
+//     //             }
+//     //             // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
+//     //             sendData("\n");
+//     //             for(int i = 0; i < fb->len; i++){
+//     //                 input->data.f[i] = fb->buf[i]/255.0f;
+//     //             }
+               
+//     //             doInference();
+//     //             sendBackPredictions(output);
+//     //             esp_camera_fb_return(fb);
+//             //  sendData("ahihi \n");
+            
+//             // char str[250] ="";
+//             // char motso[10];
+//             // for (int i=0; i<10; i++ )
+//             // {
+//             //     strcat( str, itoa( (int)a[i], motso, 10 ));
+//             // }
+//             // strcat( str, "\n");
+//             // sendData(str);
+//         }
         
 
     }
 
-///// TEST ẢNH TĨNH : test_image_96x96
-    // for (;;)
-    // {
-    //     char a[30]={0};
-    //     // doc chuoi python gui ("1")
+// ///// TEST ẢNH TĨNH : test_image_96x96
+//     // for (;;)
+//     // {
+//     //     char a[30]={0};
+//     //     // doc chuoi python gui ("1")
        
-        // readUartBytes(input->data.f, totalExpectedDataAmount);
-    //     doInference();
-    //     sendBackPredictions(output);
-    //     uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
-    //     sendData(a);
-    //     sendData("\n");
-    // }
-}
+//         // readUartBytes(input->data.f, totalExpectedDataAmount);
+//     //     doInference();
+//     //     sendBackPredictions(output);
+//     //     uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
+//     //     sendData(a);
+//     //     sendData("\n");
+//     // }
+// }
