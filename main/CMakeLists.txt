@@ -1,6 +1,6 @@
 
 set(COMPONENT_SRCS
-   
+    "main.cc"
     "main_functions.cc" 
     "app_camera.cc" 
     "model_data.cc"
