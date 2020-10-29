@@ -206,6 +206,13 @@ using namespace std;
 #define TRIGGER_GPIO GPIO_NUM_12
 #define ECHO_GPIO GPIO_NUM_13
 
+#define trigger_taiche GPIO_NUM_15
+#define echo_taiche GPIO_NUM_16
+
+#define trigger_khongtaiche GPIO_NUM_2
+#define echo_khongtaiche GPIO_NUM_4
+
+
 
 uint32_t distance_;
 void ultrasonic_test(void *pvParamters)
@@ -247,17 +254,103 @@ void ultrasonic_test(void *pvParamters)
         }
             
 
-        // vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(900 / portTICK_PERIOD_MS);
     }
 }
 
+
+
+uint32_t distance_taiche;
+void ultrasonic_taiche()
+{
+    ultrasonic_sensor_t sensor = {
+        .trigger_pin = trigger_taiche,
+        .echo_pin = echo_taiche 
+    };
+
+    ultrasonic_init(&sensor);
+
+    // while (true)
+    {
+       
+        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_taiche);
+        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+       
+        if (res != ESP_OK)
+        {
+            printf("Error: ");
+            switch (res)
+            {
+                case ESP_ERR_ULTRASONIC_PING:
+                    cout<<("Cannot ping (device is in invalid state)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                    printf("Ping timeout (no device found)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                    printf("Echo timeout (i.e. distance_ too big)\n");
+                    break;
+                default:
+                    printf("%d\n", res);
+            }
+        }
+        else{
+           
+            printf("Distance: TAI CHE %d cm\n", distance_taiche);
+        }
+    }
+}
+
+uint32_t distance_khongtaiche;
+void ultrasonic_khongtaiche()
+{
+    ultrasonic_sensor_t sensor = {
+        .trigger_pin = trigger_khongtaiche,
+        .echo_pin = echo_khongtaiche 
+    };
+
+    ultrasonic_init(&sensor);
+
+    // while (true)
+    {
+       
+        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_khongtaiche);
+        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+       
+        if (res != ESP_OK)
+        {
+            printf("Error: ");
+            switch (res)
+            {
+                case ESP_ERR_ULTRASONIC_PING:
+                    cout<<("Cannot ping (device is in invalid state)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                    printf("Ping timeout (no device found)\n");
+                    break;
+                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                    printf("Echo timeout (i.e. distance_ too big)\n");
+                    break;
+                default:
+                    printf("%d\n", res);
+            }
+        }
+        else{
+           
+            printf("Distance: KHONG TAI CHE %d cm\n", distance_khongtaiche);
+        }
+            
+
+        // vTaskDelay(60000 / portTICK_PERIOD_MS);
+    }
+}
 
 servoControl myServo;
 
 void servo_left()
 {       
     myServo.attach(GPIO_NUM_14);
-    myServo.write(90);	
+    myServo.write(68);	
     vTaskDelay(1000 / portTICK_RATE_MS);
 		// for (int i = 90; i>0; i--)
         // {
@@ -271,7 +364,7 @@ void servo_left()
         // }
     myServo.write(0);	
     vTaskDelay(1000 / portTICK_RATE_MS); 
-    myServo.write(90);
+    myServo.write(68);
     vTaskDelay(1000 / portTICK_RATE_MS);
     cout<< " quay 0 ne"<< endl;
 	// myServo.write(90);	
@@ -280,11 +373,11 @@ void servo_left()
 void servo_right()
 {
     myServo.attach(GPIO_NUM_14);
-    myServo.write(90);
+    myServo.write(68);
     vTaskDelay(200 / portTICK_RATE_MS);
     myServo.write(180);
     vTaskDelay(1000 / portTICK_RATE_MS);      
-    myServo.write(90);
+    myServo.write(68);
     vTaskDelay(200 / portTICK_RATE_MS);
     cout<< " quay 180 ne"<< endl;
     
@@ -292,6 +385,19 @@ void servo_right()
             
       
 }
+
+void servo()
+{
+    myServo.attach(GPIO_NUM_14);
+    myServo.write(68);
+    vTaskDelay(200 / portTICK_RATE_MS);
+    cout<< " back"<< endl;
+    
+    //cout<<" tra ve 90"<< endl;
+            
+      
+}
+
 int arg_max(float *array, int sl ){
     int kq= 0;
     for( int i=1; i <sl; i++){
@@ -310,7 +416,7 @@ int chup_hinh()
 // uart_flush(UART_NUMBER);
 // doInference();
 // sendBackPredictions(output);
-
+    // servo();
     // if( a[0]==49 )
     // {
     camera_fb_t * fb = NULL;
@@ -364,79 +470,125 @@ int chup_hinh()
             char *label[]={"cardboard", "glass", "metal", "paper", "plastic", "trash"};
             cout<< label[kq_predict]<< endl;
             
-            if( kq_predict== 5){
-                cout<< " khong tai che"<< endl;
-                // myServo.write(0); 
-               
-                return 0;
-                // vTaskDelay(1000 / portTICK_PERIOD_MS);
-                
+            if( kq_predict== 5|| kq_predict== 3 ){
+               return 0;
             }
             else
             {
-                cout<< " tai che"<< endl;
-                // myServo.write(180);
-                
                 return 1;
-                // vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
-            // esp_camera_fb_return(fb);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // esp_camera_fb_return(fb);
+    // vTaskDelay(5000 / portTICK_PERIOD_MS);
 		
     //        
     //     }
 
 }
 
+void classification(){
+ while (true)
+    {   
+        
+        // cout<<"tai che ne"<< distance_taiche<< "\n";
+        // vTaskDelay(500 / portTICK_RATE_MS); 
+
+        ultrasonic_test(0);
+        cout<< "distance:"<<distance_<< "\n";
+    //     int kq_predict;
+       if( distance_ <14 && distance_ >=4 )
+        {
+            // cout<< "distance:"<<distance_<< "\n";
+            int check = chup_hinh();
+            if( check ==1 )
+            {
+                cout<< "bat dau quay TAI CHE"<< endl;
+                servo_right();
+                ultrasonic_taiche();
+            }
+            else if (check ==0 )
+            {
+                cout<< "bat dau quay KHONG TAI CHE"<< endl;
+                servo_left();
+                ultrasonic_khongtaiche();
+            }
+            // else
+            // {
+            //     int check = chup_hinh();
+            //     if( check ==1 )
+            //     {
+            //         cout<< "bat dau quay TAI CHE"<< endl;
+            //         servo_right();
+            //         ultrasonic_taiche();
+            //     }
+            //     else if (check ==0 )
+            //     {
+            //         cout<< "bat dau quay KHONG TAI CHE"<< endl;
+            //         servo_left();
+            //         ultrasonic_khongtaiche();
+            //     }
+                    
+            //     }
+            
+            
+        }
+        
+            
+
+    }
+}
+
 extern "C" void app_main(void)
 {
 	
-	
-    // xTaskCreate(ultrasonic_test, "ultrasonic_test", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
+    
     app_camera_init();
     initUart(UART_NUMBER);
     setup();
+    classification();
+    
+    
     // myServo.attach(GPIO_NUM_14);
     // myServo.write(0);	
     // /vTaskDelay(1000 / portTICK_RATE_MS); 
 	//Defaults: myServo.attach(pin, 400, 2600, LEDC_CHANNEL_0, LEDC_TIMER0);
 	// to use more servo set a valid ledc channel and timer
 	  
-        // cout<< distance_<< "\n";
-    while (true)
-    {
-        // myServo.write(90); 
-        // vTaskDelay(1000 / portTICK_RATE_MS); 
-        ultrasonic_test(0);
-        cout<< distance_<< "\n";
-    //     int kq_predict;
-       if( distance_ <20 && distance_ >=0 )
-        {
-            // chup_hinh();
+    // while (true)
+    // {   
+        
+    //     // cout<<"tai che ne"<< distance_taiche<< "\n";
+    //     // vTaskDelay(500 / portTICK_RATE_MS); 
 
-            int check = chup_hinh();
-            if( check ==1 )
-            {
-                cout<< "bat dau quay TAI CHE"<< endl;
-                servo_right();
+    //     ultrasonic_test(0);
+    //     cout<< "distance_servo"<<distance_<< "\n";
+    // //     int kq_predict;
+    //    if( distance_ <20 && distance_ >=0 )
+    //     {
+    //         // chup_hinh();
 
-            }
-            else
-            {
-                cout<< "bat dau quay KHONG TAI CHE"<< endl;
-                servo_left();
-            }
+    //         int check = chup_hinh();
+    //         if( check ==1 )
+    //         {
+    //             cout<< "bat dau quay TAI CHE"<< endl;
+    //             servo_right();
+
+    //         }
+    //         else
+    //         {
+    //             cout<< "bat dau quay KHONG TAI CHE"<< endl;
+    //             servo_left();
+    //         }
             
-        }
-        else if( distance_ >= 25 && distance_ <=40 )
-        {
+    //     }
+    //     else if( distance_ >= 25 && distance_ <=40 )
+    //     {
            
-            cout<< "ahihi"<< endl;
-            servo_left();
-        }
+    //         cout<< "ahihi"<< endl;
+    //         servo_left();
+    //     }
    
-    }
- 
+    // }
+    
     
 
     

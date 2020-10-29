@@ -174,7 +174,7 @@ typedef struct ImageBuffer
 #endif
 
 #define XCLK_FREQ 20000000
-
+// #define XCLK_FREQ 5000000
 #ifdef __cplusplus
 extern "C" {
 #endif
