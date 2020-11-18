@@ -1,26 +1,17 @@
-
 #include "string.h"
 #include <stdio.h>
-
 #include "esp_system.h"
-
 #include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
 #include "main_functions.h"
-
 #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"
-
 #include "model_data.h"
 #include "model_operations.h"
-
-// Quanhh đã chữa nè 
-
 #include "app_camera.h" 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -44,7 +35,11 @@ TfLiteTensor *output = nullptr;
 constexpr int kTensorArenaSize =  420548;
 //uint8_t tensor_arena[kTensorArenaSize];
 uint8_t *tensor_arena;
+
+
 // The name of this function is important for Arduino compatibility.
+
+float *input_tro_dat_cham_f; //Luu lai dia chi cua input->data.f phong khi no thay doi giua hang 224 va 251
 void setup()
 {
     
@@ -102,36 +97,19 @@ void doInference()
 
 
 static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size_t len){
-    // jpg_chunking_t *j = (jpg_chunking_t *)arg;
-    // if(!index){
-    //     j->len = 0;
-    // }
-    // if(httpd_resp_send_chunk(j->req, (const char *)data, len) != ESP_OK){
-    //     return 0;
-    // }
-    // j->len += len;
-    //return sendData((const char*)data, len);
-    //char str[4*len] ="";
     char tmp[40];
     const char* ahihi = (const char*) data;
-    //itoa((int)len, tmp, 10);
-    
-    //sendData(tmp);
-    //sendData("tren tmp ne");sendData("\n");
     for (int i=0; i< len; i++ )
     {
         itoa( (int)ahihi[i], tmp,10);
         strcat( tmp, " ");
         sendData(tmp);
     }
-    //sendData("dang test ne \n");
-    //strcalen; str, "\n");
     return len;
 }
 
 void jpg_httpd_handler(){
     camera_fb_t * fb = NULL;
-    // esp_err_t res = ESP_OK;
     size_t fb_len = 0;
     int64_t fr_start = esp_timer_get_time();
     
@@ -145,54 +123,44 @@ void jpg_httpd_handler(){
     }
     else
     {
-       // sendData("Camera cua Q da chup ne :D ");
-         //return ;
+      
     }
     
-    
-
-    // if(res == ESP_OK){
-        if(fb->format == PIXFORMAT_JPEG){
-            fb_len = fb->len;
-            //sendData((const char*)fb->buf, fb->len);
-            //char str[4*fb->len] ="";
-            char tmp[40];
-            for (int i=0; i< fb->len; i++ )
-            {
-                itoa( (int)fb->buf[i], tmp,10);
-                strcat( tmp, " ");
-                sendData(tmp);
-            }
-            sendData("  nen ne\n");
-            sendData("\n");
-            
-            doInference();
-            sendBackPredictions(output);
-            // res = httpd_resp_send(req, (const char *)fb->buf, fb->len);
-        } else {
-            fb_len = fb->len;
-            //sendData((const char*)fb->buf, fb->len);
-            //char str[4*fb->len] ="";
-            char tmp[40];
-            for (int i=0; i< fb->len; i++ )
-            {
-                itoa( (int)fb->buf[i], tmp,10);
-                strcat( tmp, " ");
-                sendData(tmp);
-            }
-            // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
-            sendData("\n");
-            
-            doInference();sendData("hinh chua nen ne\n");
-            sendBackPredictions(output);
-            
+    if(fb->format == PIXFORMAT_JPEG)
+    {
+        fb_len = fb->len;
+        char tmp[40];
+        for (int i=0; i< fb->len; i++ )
+        {
+            itoa( (int)fb->buf[i], tmp,10);
+            strcat( tmp, " ");
+            sendData(tmp);
         }
-    // }
+        sendData("  nen ne\n");
+        sendData("\n");
+        doInference();
+        sendBackPredictions(output);
+    }
+    else 
+    {
+        fb_len = fb->len;
+        char tmp[40];
+        for (int i=0; i< fb->len; i++ )
+        {
+            itoa( (int)fb->buf[i], tmp,10);
+            strcat( tmp, " ");
+            sendData(tmp);
+        }
+        sendData("\n");    
+        doInference();sendData("hinh chua nen ne\n");
+        sendBackPredictions(output);
+        
+    }
     esp_camera_fb_return(fb);
     int64_t fr_end = esp_timer_get_time();
-    // ESP_LOGI(TAG, "JPG: %uKB %ums", (uint32_t)(fb_len/1024), (uint32_t)((fr_end - fr_start)/1000));
-    // return res;
 }
+
+// code ultrasonic sensor
 #include <stdio.h>
 #include <stdbool.h>
 #include <freertos/FreeRTOS.h>
@@ -212,8 +180,6 @@ using namespace std;
 #define trigger_khongtaiche GPIO_NUM_2
 #define echo_khongtaiche GPIO_NUM_4
 
-
-
 uint32_t distance_;
 void ultrasonic_test(void *pvParamters)
 {
@@ -221,41 +187,30 @@ void ultrasonic_test(void *pvParamters)
         .trigger_pin = TRIGGER_GPIO,
         .echo_pin = ECHO_GPIO
     };
-
     ultrasonic_init(&sensor);
-
-    // while (true)
+    esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_); 
+    if (res != ESP_OK)
     {
-       
-        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_);
-        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-       
-        if (res != ESP_OK)
+        printf("Error: ");
+        switch (res)
         {
-            printf("Error: ");
-            switch (res)
-            {
-                case ESP_ERR_ULTRASONIC_PING:
-                    cout<<("Cannot ping (device is in invalid state)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
-                    printf("Ping timeout (no device found)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
-                    printf("Echo timeout (i.e. distance_ too big)\n");
-                    break;
-                default:
-                    printf("%d\n", res);
-            }
+            case ESP_ERR_ULTRASONIC_PING:
+                cout<<("Cannot ping (device is in invalid state)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                printf("Ping timeout (no device found)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                printf("Echo timeout (i.e. distance_ too big)\n");
+                break;
+            default:
+                printf("%d\n", res);
         }
-        else{
-           
-            // printf("Distance: %d cm\n", distance_);
-        }
-            
-
-        vTaskDelay(900 / portTICK_PERIOD_MS);
     }
+    else{
+        // printf("Distance: %d cm\n", distance_);
+    }
+    vTaskDelay(860 / portTICK_PERIOD_MS);
 }
 
 
@@ -267,37 +222,28 @@ void ultrasonic_taiche()
         .trigger_pin = trigger_taiche,
         .echo_pin = echo_taiche 
     };
-
     ultrasonic_init(&sensor);
-
-    // while (true)
+    esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_taiche);  
+    if (res != ESP_OK)
     {
-       
-        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_taiche);
-        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-       
-        if (res != ESP_OK)
+        printf("Error: ");
+        switch (res)
         {
-            printf("Error: ");
-            switch (res)
-            {
-                case ESP_ERR_ULTRASONIC_PING:
-                    cout<<("Cannot ping (device is in invalid state)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
-                    printf("Ping timeout (no device found)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
-                    printf("Echo timeout (i.e. distance_ too big)\n");
-                    break;
-                default:
-                    printf("%d\n", res);
-            }
+            case ESP_ERR_ULTRASONIC_PING:
+                // cout<<("Cannot ping (device is in invalid state)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                printf("Ping timeout (no device found)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                printf("Echo timeout (i.e. distance_ too big)\n");
+                break;
+            default:
+                printf("%d\n", res);
         }
-        else{
-           
-            printf("Distance: TAI CHE %d cm\n", distance_taiche);
-        }
+    }
+    else{
+        printf("Distance: TAI CHE %d cm\n", distance_taiche);
     }
 }
 
@@ -309,95 +255,59 @@ void ultrasonic_khongtaiche()
         .echo_pin = echo_khongtaiche 
     };
 
-    ultrasonic_init(&sensor);
-
-    // while (true)
+    ultrasonic_init(&sensor);    
+    esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_khongtaiche);
+    if (res != ESP_OK)
     {
-       
-        esp_err_t res = ultrasonic_measure_cm(&sensor, MAX_DISTANCE_CM, &distance_khongtaiche);
-        // printf("ahihihiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-       
-        if (res != ESP_OK)
+        printf("Error: ");
+        switch (res)
         {
-            printf("Error: ");
-            switch (res)
-            {
-                case ESP_ERR_ULTRASONIC_PING:
-                    cout<<("Cannot ping (device is in invalid state)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
-                    printf("Ping timeout (no device found)\n");
-                    break;
-                case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
-                    printf("Echo timeout (i.e. distance_ too big)\n");
-                    break;
-                default:
-                    printf("%d\n", res);
-            }
+            case ESP_ERR_ULTRASONIC_PING:
+                cout<<("Cannot ping (device is in invalid state)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_PING_TIMEOUT:
+                printf("Ping timeout (no device found)\n");
+                break;
+            case ESP_ERR_ULTRASONIC_ECHO_TIMEOUT:
+                printf("Echo timeout (i.e. distance_ too big)\n");
+                break;
+            default:
+                printf("%d\n", res);
         }
-        else{
-           
-            printf("Distance: KHONG TAI CHE %d cm\n", distance_khongtaiche);
-        }
-            
-
-        // vTaskDelay(60000 / portTICK_PERIOD_MS);
+    }
+    else{
+        
+        printf("Distance: KHONG TAI CHE %d cm\n", distance_khongtaiche);
     }
 }
 
+// Code dieu khien servo
 servoControl myServo;
-
+// Khong tai che
 void servo_left()
 {       
-    myServo.attach(GPIO_NUM_14);
-    myServo.write(68);	
-    vTaskDelay(1000 / portTICK_RATE_MS);
-		// for (int i = 90; i>0; i--)
-        // {
-		// 	myServo.write(i);
-        //     vTaskDelay(10 / portTICK_RATE_MS);
-		// }
-        // for ( int j= 0; j<=90; j++)
-        // {
-        //     myServo.write(j);
-        //    TaskDelay(10 / portTICK_RATE_MS);
-        // }
-    myServo.write(0);	
-    vTaskDelay(1000 / portTICK_RATE_MS); 
-    myServo.write(68);
-    vTaskDelay(1000 / portTICK_RATE_MS);
-    cout<< " quay 0 ne"<< endl;
-	// myServo.write(90);	
+   for (int i = 86; i>=0; i--){
+			myServo.write(i);
+			vTaskDelay(10 / portTICK_RATE_MS);
+		}
+    for (int i = 0; i<=86; i++){
+			myServo.write(i);
+			vTaskDelay(10 / portTICK_RATE_MS);
+		}
 }
-
+//Tai che
 void servo_right()
 {
-    myServo.attach(GPIO_NUM_14);
-    myServo.write(68);
-    vTaskDelay(200 / portTICK_RATE_MS);
-    myServo.write(180);
-    vTaskDelay(1000 / portTICK_RATE_MS);      
-    myServo.write(68);
-    vTaskDelay(200 / portTICK_RATE_MS);
-    cout<< " quay 180 ne"<< endl;
-    
-    //cout<<" tra ve 90"<< endl;
-            
-      
+     for (int i = 86; i<=180; i++){
+			myServo.write(i);
+			vTaskDelay(10 / portTICK_RATE_MS);
+		}
+     for (int i =180; i>=86; i--){
+			myServo.write(i);
+			vTaskDelay(10 / portTICK_RATE_MS);
+		}
 }
-
-void servo()
-{
-    myServo.attach(GPIO_NUM_14);
-    myServo.write(68);
-    vTaskDelay(200 / portTICK_RATE_MS);
-    cout<< " back"<< endl;
-    
-    //cout<<" tra ve 90"<< endl;
-            
-      
-}
-
+// Tim Max
 int arg_max(float *array, int sl ){
     int kq= 0;
     for( int i=1; i <sl; i++){
@@ -410,201 +320,73 @@ int arg_max(float *array, int sl ){
 
 int chup_hinh()
 {
-// uint8_t a[10]={0};
-// // doc chuoi python gui ("1")
-// uart_read_bytes(UART_NUMBER, a, 1, 1000 / portTICK_RATE_MS);
-// uart_flush(UART_NUMBER);
-// doInference();
-// sendBackPredictions(output);
-    // servo();
-    // if( a[0]==49 )
-    // {
     camera_fb_t * fb = NULL;
-    // esp_err_t res = ESP_OK;
-
     int64_t fr_start = esp_timer_get_time();
-    
     // Code chup hinh ne :)
     fb = esp_camera_fb_get();
     if (!fb) {
         cout<<"Camera capture failed"<<endl;
-    // ESP_LOGE(TAG, "Camera capture failed");
+        // ESP_LOGE(TAG, "Camera capture failed");
         
-        //  return -1;
+        return -1;
     }
     else
     {
-    // sendData("Camera cua Q da chup ne :D ");
-        //return ;
+
     }
-    // jpg_httpd_handler();
 
-    //sendData((const char*)fb->buf, fb->len);
-    //char str[4*fb->len] ="";
-    // char tmp[40];
-    // for (int i=0; i< fb->len; i++ )
-    // {
-    //     itoa( (int)fb->buf[i], tmp,10);
-    //     strcat( tmp, " ");
-    //     sendData(tmp);
-    // }
-    // // frame2jpg_cb(fb, 80, jpg_encode_stream, 0);
-    // sendData("\n");
-
+    input->data.f = input_tro_dat_cham_f;
     for(int i = 0; i < fb->len; i++){
         input->data.f[i] = fb->buf[i]/255.0f;
     }
-    // label= {0: 'cardboard', 1: 'glass', 2: 'metal', 3: 'paper', 4: 'plastic', 5: 'trash'};
-    // Quanhh= np.argmax(predictions)
-
-    doInference();
-    sendBackPredictions(output);
+    doInference(); //Goi tensorflow ra predict
+    sendBackPredictions(output); // tra kq predict 
     esp_camera_fb_return(fb);
     int kq_predict = arg_max(output->data.f, output->dims->data[1]);
-    // return kq_predict;
-    // if( distance_ <20 && distance_ >=0 ){
-    //         kq_predict = chup_hinh();
-    //         if( kq_predict == -1){
-    //             continue;
-    //         }
-            char *label[]={"cardboard", "glass", "metal", "paper", "plastic", "trash"};
-            cout<< label[kq_predict]<< endl;
-            
-            if( kq_predict== 5|| kq_predict== 3 ){
-               return 0;
-            }
-            else
-            {
-                return 1;
-            }
-    // esp_camera_fb_return(fb);
-    // vTaskDelay(5000 / portTICK_PERIOD_MS);
-		
-    //        
-    //     }
-
+    char* label[]={"cardboard", "glass", "metal", "paper", "plastic", "trash"};
+    cout<< label[kq_predict]<< endl;
+    if( kq_predict== 5|| kq_predict== 3 ){
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+    vTaskDelay(100000 / portTICK_PERIOD_MS);
 }
 
 void classification(){
- while (true)
+    while (true)
     {   
-        
-        // cout<<"tai che ne"<< distance_taiche<< "\n";
-        // vTaskDelay(500 / portTICK_RATE_MS); 
-
         ultrasonic_test(0);
-        cout<< "distance:"<<distance_<< "\n";
-    //     int kq_predict;
-       if( distance_ <14 && distance_ >=4 )
+        if( distance_ <14 && distance_ >=4 )
         {
-            // cout<< "distance:"<<distance_<< "\n";
             int check = chup_hinh();
-            if( check ==1 )
+            if( check ==1 )// Tai che
             {
-                cout<< "bat dau quay TAI CHE"<< endl;
                 servo_right();
                 ultrasonic_taiche();
+               
             }
-            else if (check ==0 )
+            else if (check ==0 ) // Khong tai che
             {
-                cout<< "bat dau quay KHONG TAI CHE"<< endl;
                 servo_left();
                 ultrasonic_khongtaiche();
             }
-            // else
-            // {
-            //     int check = chup_hinh();
-            //     if( check ==1 )
-            //     {
-            //         cout<< "bat dau quay TAI CHE"<< endl;
-            //         servo_right();
-            //         ultrasonic_taiche();
-            //     }
-            //     else if (check ==0 )
-            //     {
-            //         cout<< "bat dau quay KHONG TAI CHE"<< endl;
-            //         servo_left();
-            //         ultrasonic_khongtaiche();
-            //     }
-                    
-            //     }
-            
-            
+            esp_restart();
         }
-        
-            
-
     }
 }
+
 
 extern "C" void app_main(void)
 {
 	
-    
+    myServo.attach(GPIO_NUM_14,400,2600U,LEDC_CHANNEL_1,LEDC_TIMER_1);
+
     app_camera_init();
     initUart(UART_NUMBER);
-    setup();
+    setup(); //Set up tensorflow
+    input_tro_dat_cham_f = input->data.f;
     classification();
-    
-    
-    // myServo.attach(GPIO_NUM_14);
-    // myServo.write(0);	
-    // /vTaskDelay(1000 / portTICK_RATE_MS); 
-	//Defaults: myServo.attach(pin, 400, 2600, LEDC_CHANNEL_0, LEDC_TIMER0);
-	// to use more servo set a valid ledc channel and timer
-	  
-    // while (true)
-    // {   
-        
-    //     // cout<<"tai che ne"<< distance_taiche<< "\n";
-    //     // vTaskDelay(500 / portTICK_RATE_MS); 
-
-    //     ultrasonic_test(0);
-    //     cout<< "distance_servo"<<distance_<< "\n";
-    // //     int kq_predict;
-    //    if( distance_ <20 && distance_ >=0 )
-    //     {
-    //         // chup_hinh();
-
-    //         int check = chup_hinh();
-    //         if( check ==1 )
-    //         {
-    //             cout<< "bat dau quay TAI CHE"<< endl;
-    //             servo_right();
-
-    //         }
-    //         else
-    //         {
-    //             cout<< "bat dau quay KHONG TAI CHE"<< endl;
-    //             servo_left();
-    //         }
-            
-    //     }
-    //     else if( distance_ >= 25 && distance_ <=40 )
-    //     {
-           
-    //         cout<< "ahihi"<< endl;
-    //         servo_left();
-    //     }
-   
-    // }
-    
-    
-
-    
 }
-
-// ///// TEST ẢNH TĨNH : test_image_96x96
-//     // for (;;)
-//     // {
-//     //     char a[30]={0};
-//     //     // doc chuoi python gui ("1")
-       
-//         // readUartBytes(input->data.f, totalExpectedDataAmount);
-//     //     doInference();
-//     //     sendBackPredictions(output);
-//     //     uart_read_bytes(UART_NUMBER, (uint8_t*)(a) , 30, 1000 / portTICK_RATE_MS);
-//     //     sendData(a);
-//     //     sendData("\n");
-//     // }
-// }

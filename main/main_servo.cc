@@ -30,9 +30,17 @@ SOFTWARE.
  servoControl myServo;
  void servo()
 {
-	myServo.write(0);
-	vTaskDelay(1000 / portTICK_RATE_MS);
 	
+	
+
+		myServo.write(90);
+		vTaskDelay(1000 / portTICK_RATE_MS);
+
+
+
+	
+	
+
 	while (1){
 		for (int i = 0; i<180; i++){
 			myServo.write(i);
@@ -47,7 +55,7 @@ SOFTWARE.
 }
 extern "C" void app_main(){
 	
-	myServo.attach( GPIO_NUM_15 );
+	myServo.attach( GPIO_NUM_14 );
 	//Defaults: myServo.attach(pin, 400, 2600, LEDC_CHANNEL_0, LEDC_TIMER0);
 	// to use more servo set a valid ledc channel and timer
 	
